@@ -7,7 +7,7 @@
 #	tape		- make a tape image for a "cold" kernel
 #	unix		- make the kernel
 #	clean		- delete intermediate files
-#	clobber		- delete all generated files
+#	distclean	- delete all generated files
 #
 # settings:
 #	EXTRAPATCHES - list of extra patches to apply
@@ -30,7 +30,7 @@ APOUT_ROOT = ../fs/root
 APOUT = APOUT_ROOT=$(APOUT_ROOT) ../tools/apout/apout
 AS = $(APOUT) $(APOUT_ROOT)/bin/as
 NM = $(APOUT) $(APOUT_ROOT)/bin/nm
-TREECOPY = rsync -a --exclude .svn
+TREECOPY = cp -R
 KSRCS = u0.s u1.s u2.s u3.s u4.s u5.s u6.s u7.s u8.s u9.s ux.s
 ALLSRCS = $(KSRCS) init.s sh.s
 CLEANSRCS = $(ALLSRCS:.s=.clean)
@@ -122,6 +122,8 @@ root usr protofs : $(ALLSRCS) init.0405 sh.0405
 	@cp $(KSRCS) usr/sys
 	@cp init.0405 root/etc/init
 	@cp sh.0405 root/bin/sh
+	@$(AS) usr/src/lib/crt0.s
+	@mv -f a.out usr/lib/crt0.o
 	@touch protofs
 
 # build filesystem images
@@ -143,6 +145,7 @@ tape : protofs
 
 install : rf0.dsk rk0.dsk
 	@echo Installing...
+	@mkdir -p ../images
 	@cp rf0.dsk rk0.dsk ../boot/m792low.load ../images
 	
 # clean intermediate files
@@ -155,7 +158,7 @@ clean :
 	rm -f images
 
 # clean intermediate and target files
-clobber : clean
+distclean : clean
 	rm -f tape
 	rm -f rf0.dsk rk0.dsk
 
